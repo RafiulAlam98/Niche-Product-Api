@@ -26,10 +26,17 @@ const run = async() =>{
 
           //get products
           app.get('/products',async (req,res)=>{
-               const homeProduct = req.query.product
-               const query =  productsCollection.find({}).limit(6)
-               const result = await query.toArray()
-               console.log(result)
+               console.log(req.query)
+               const cursor =  productsCollection.find({})
+               const page = req.query.page
+               const size = parseInt(req.query.size) 
+               let result;
+               if(page){
+                    result = await cursor.limit(size).toArray()
+               }
+               else{
+                    result = await cursor.toArray()
+               }             
                res.json(result)
           })
 
