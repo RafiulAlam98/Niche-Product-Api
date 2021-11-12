@@ -24,11 +24,11 @@ const run = async() =>{
 
           const database = client.db("niche-product")
           const productsCollection = database.collection("products")
-          const userCollection = database.collection("user-cart")
+          const userCartCollection = database.collection("user-cart")
+          const usersCollection = database.collection('users')
 
           //get products
           app.get('/products',async (req,res)=>{
-               console.log(req.query)
                const cursor =  productsCollection.find({})
                const page = req.query.page
                const size = parseInt(req.query.size)
@@ -42,17 +42,17 @@ const run = async() =>{
                res.json(result)
           })
 
-          // post users information
+          // post users product information
           app.post('/users',async(req,res) => {
                console.log(req.body)
-               const doc = await userCollection.insertOne(req.body)
+               const doc = await userCartCollection.insertOne(req.body)
                res.json(doc)
           })
 
-          // get only signed in users
+          // get only signed in users and show product
           app.get('/users/:id',async(req,res)=>{
                const query = {email: req.params.id}
-               const cursor = await userCollection.find(query)
+               const cursor = await userCartCollection.find(query)
                const result = await cursor.toArray()
                console.log(result)
                res.json(result)
@@ -61,19 +61,105 @@ const run = async() =>{
 
           // delete operation by user
           app.delete('/users/:id',async(req,res)=>{
-               console.log(req.params.id)
                const query = {_id:ObjectId(req.params.id)}
-               const result = await userCollection.deleteOne(query)  
+               const result = await userCartCollection.deleteOne(query)  
                res.json(result)
           })
 
-          // get all the users
+          // get all the users purchasing product on cart
           app.get('/users', async(req,res)=>{
-               const cursor = await userCollection.find({})
+               const cursor = await userCartCollection.find({})
                const result = await cursor.toArray()
                res.json(result)
           })
 
+          // update status  by the admin
+          app.put('/users/:id', async(req,res)=>{
+               const id = req.params.id
+               const updatedUser = req.body
+               console.log(updatedUser)
+               const filter = {_id:ObjectId(id)}
+               const option = {upsert : true}
+               const updateDoc = {
+                    $set: {
+                      Status: `Shipped`
+                    },
+                  };
+               const result = await userCartCollection.updateOne(filter,updateDoc,option)
+
+               res.json(result)
+          })
+
+          // save users information
+          app.post('/signed/users', async(req,res) =>{
+               const user = req.body
+               const result = await usersCollection.insertOne(user)
+               res.json(result)
+          })
+
+          // get signed in users
+          app.get('/signed/users', async(req,res)=>{
+               const query = await usersCollection.find({})
+               const result = await query.toArray()
+               res.json(result) 
+          })
+
+          //check users signed before or not
+          app.put('/signed/users', async(req,res)=>{
+               console.log(req.body.email)
+               const filter = {email: req.body.email}
+               const options = { upsert: true };
+               const updateDoc = {
+                    $set: req.body.email
+                  };
+                  const result = await usersCollection.updateOne(filter, updateDoc, options);
+                  res.json(result)
+          })
+
+          //user update as Admin
+          app.put('/users/admin/:id', async(req,res)=>{
+               const user = req.params.id
+               const updatedUser = req.body
+               const filter = {email:user}
+               // const option = {upsert : true}
+               const updateDoc = {
+                    $set: {
+                      role: 'Admin'
+                    },
+                  };
+               const result = await usersCollection.updateOne(filter,updateDoc)
+
+               res.json(result)
+          })
+
+          // check user is admin or not
+          app.get('/users/admin/:email', async (req, res) => {
+               const email = req.params?.email;
+               console.log(email)
+               const query = { email: email };
+               const user = await usersCollection.findOne(query);
+               let isAdmin = false;
+               if (user?.role === 'Admin') {
+                   isAdmin = true;
+               }
+               res.json({ admin: isAdmin });
+           })
+
+          // add new product by admin
+          app.post('/add/products', async(req,res)=>{
+               const products = req.body
+               console.log(products)
+               const cursor = await productsCollection.insertOne(products)
+               res.json(cursor)
+          })
+
+          // delete product by the admin
+          app.delete('/products/:id', async(req,res)=>{
+               const query = {_id:ObjectId(req.params.id)}
+               const result = await productsCollection.deleteOne(query)
+               res.json(result)
+          })
+          
 
           app.get('/', async(req,res) =>{
                console.log("server running")
