@@ -26,6 +26,7 @@ const run = async() =>{
           const productsCollection = database.collection("products")
           const userCartCollection = database.collection("user-cart")
           const usersCollection = database.collection('users')
+          const reviewsCollection = database.collection('reviews')
 
           //get products
           app.get('/products',async (req,res)=>{
@@ -158,6 +159,13 @@ const run = async() =>{
                const query = {_id:ObjectId(req.params.id)}
                const result = await productsCollection.deleteOne(query)
                res.json(result)
+          })
+
+          // user review add to the database
+          app.post('/review', async(req,res)=>{
+               console.log(req.body)
+               const query = await reviewsCollection.insertOne(req.body)
+               res.json(query)
           })
           
 
