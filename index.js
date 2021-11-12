@@ -167,6 +167,13 @@ const run = async() =>{
                const query = await reviewsCollection.insertOne(req.body)
                res.json(query)
           })
+
+          // get user review to display
+          app.get('/review',async(req,res)=>{
+               const query = await reviewsCollection.find({})
+               const result = await query.toArray()
+               res.json(result)
+          })
           
 
           app.get('/', async(req,res) =>{
