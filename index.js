@@ -11,8 +11,6 @@ app.use(express.json())
 
 require ('dotenv').config()
 
-// niche-product-website
-// oVTaUS1ZmNP5Ih7O
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.qlklf.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
@@ -20,8 +18,7 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 const run = async() =>{
      try{
           await client.connect()
-          console.log("database connected")
-
+          console.log("database connected");
           const database = client.db("niche-product")
           const productsCollection = database.collection("products")
           const userCartCollection = database.collection("user-cart")
